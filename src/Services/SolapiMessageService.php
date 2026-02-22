@@ -8,6 +8,7 @@ use Nurigo\Solapi\Exceptions\BaseException;
 use Nurigo\Solapi\Exceptions\CurlException;
 use Nurigo\Solapi\Exceptions\MessageNotReceivedException;
 use Nurigo\Solapi\Exceptions\UnknownException;
+use Psr\Http\Client\ClientInterface;
 use Nurigo\Solapi\Libraries\Fetcher;
 use Nurigo\Solapi\Models\Message;
 use Nurigo\Solapi\Models\Request\GetGroupMessagesRequest;
@@ -32,9 +33,9 @@ class SolapiMessageService
      */
     private $fetcherInstance;
 
-    public function __construct(string $apiKey, string $apiSecretKey)
+    public function __construct(string $apiKey, string $apiSecretKey, ?ClientInterface $httpClient = null)
     {
-        $this->fetcherInstance = Fetcher::getInstance($apiKey, $apiSecretKey);
+        $this->fetcherInstance = Fetcher::getInstance($apiKey, $apiSecretKey, $httpClient);
     }
 
     /**
