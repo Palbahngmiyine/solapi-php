@@ -48,6 +48,17 @@ class Fetcher
     }
 
     /**
+     * Clears the singleton instance.
+     *
+     * @internal Intended only for test isolation so each test can inject a
+     *           fresh PSR-18 client. Do not call from production code.
+     */
+    public static function resetForTesting(): void
+    {
+        self::$singleton = null;
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param mixed $data

@@ -5,17 +5,17 @@ namespace Nurigo\Solapi\Models\Response;
 class GetStatisticsRequest
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $startDate;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $endDate;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $masterAccountId;
 

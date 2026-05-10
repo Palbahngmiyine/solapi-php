@@ -8,28 +8,28 @@ use Nurigo\Solapi\Models\Message;
 class GetMessagesResponse
 {
     /**
-     * @var int
+     * @var int|null
      */
     public $limit;
 
     /**
-     * @var BaseMessage[]
+     * @var BaseMessage[]|null
      */
     public $messageList;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $startKey;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $nextKey;
 
 
     /**
-     * @param mixed $value
+     * @param \stdClass $value
      */
     public function __construct($value)
     {

@@ -5,52 +5,52 @@ namespace Nurigo\Solapi\Models\Response;
 class UploadFileResponse
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $type;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $originalName;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $link;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $fileId;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $name;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $url;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $accountId;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $dateCreated;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $dateUpdated;
 
     /**
-     * @param mixed $value
+     * @param \stdClass $value
      */
     public function __construct($value)
     {
