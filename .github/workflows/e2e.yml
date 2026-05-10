@@ -23,6 +23,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   e2e:
     name: E2E / PHP ${{ inputs.php-version }}
@@ -41,6 +44,14 @@ jobs:
           coverage: none
           tools: composer:v2
 
+      - name: Determine PHPUnit constraint
+        id: phpunit
+        run: |
+          case "${{ inputs.php-version }}" in
+            7.1|7.2) echo "constraint=^7.5" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "constraint=^9.5" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Resolve Composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
@@ -49,15 +60,20 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-e2e-${{ inputs.php-version }}-${{ hashFiles('composer.json') }}
+          key: composer-e2e-${{ inputs.php-version }}-${{ steps.phpunit.outputs.constraint }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             composer-e2e-${{ inputs.php-version }}-
 
-      - name: Pin PHPUnit for legacy PHP
+      - name: Allow legacy PHPUnit on PHP 7.1/7.2
         if: inputs.php-version == '7.1' || inputs.php-version == '7.2'
-        run: composer require --dev --no-update --no-interaction "phpunit/phpunit:^7.5"
+        run: composer config --no-plugins audit.block-insecure false
+
+      - name: Pin PHPUnit constraint
+        run: composer require --dev --no-update --no-interaction "phpunit/phpunit:${{ steps.phpunit.outputs.constraint }}"
 
       - name: Install dependencies
+        env:
+          COMPOSER_NO_AUDIT: "1"
         run: composer update --prefer-dist --no-interaction --no-progress
 
       - name: Run E2E tests
