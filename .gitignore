@@ -20,3 +20,6 @@ composer.phar
 
 # omc
 .omc/
+
+# Claude Code
+.claude/
