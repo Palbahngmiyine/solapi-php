@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  unit-test:
+    name: Unit / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["7.1", "7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Determine PHPUnit constraint
+        id: phpunit
+        run: |
+          case "${{ matrix.php }}" in
+            7.1|7.2) echo "constraint=^7.5" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "constraint=^9.5" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ matrix.php }}-${{ steps.phpunit.outputs.constraint }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.php }}-${{ steps.phpunit.outputs.constraint }}-
+            composer-${{ matrix.php }}-
+
+      - name: Allow legacy PHPUnit on PHP 7.1/7.2
+        if: matrix.php == '7.1' || matrix.php == '7.2'
+        # PHP 7.1 ships an older Composer (<=2.2) that lacks the audit.block-insecure setting,
+        # so the command exits non-zero. That same older Composer also does not enforce the
+        # block, so ignoring the failure is safe.
+        run: composer config --no-plugins audit.block-insecure false || true
+
+      - name: Pin PHPUnit constraint
+        run: composer require --dev --no-update --no-interaction "phpunit/phpunit:${{ steps.phpunit.outputs.constraint }}"
+
+      - name: Install dependencies
+        env:
+          COMPOSER_NO_AUDIT: "1"
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run unit tests
+        run: composer test:unit

@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Tag & GitHub Release
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master' &&
+      github.event.workflow_run.event == 'push'
+
+    steps:
+      - name: Checkout CI head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Extract version from composer.json
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r '.version' composer.json)
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::composer.json version '$VERSION' is not a plain semver (X.Y.Z). Pre-release tags are not supported by this workflow."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      - name: Verify DefaultAgent.php version matches composer.json
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          AGENT_FILE="src/Models/Request/DefaultAgent.php"
+          AGENT_VERSION=$(grep -oE "php/[0-9]+\.[0-9]+\.[0-9]+" "$AGENT_FILE" | head -n1 | sed 's|php/||')
+          if [ -z "$AGENT_VERSION" ]; then
+            echo "::error file=$AGENT_FILE::Could not locate 'php/X.Y.Z' SDK version literal in $AGENT_FILE."
+            exit 1
+          fi
+          if [ "$VERSION" != "$AGENT_VERSION" ]; then
+            echo "::error file=$AGENT_FILE::Version drift detected. composer.json='$VERSION' but $AGENT_FILE='$AGENT_VERSION'. Update both files to the same value."
+            exit 1
+          fi
+          echo "Version drift check passed: $VERSION"
+
+      - name: Check whether tag already exists
+        id: tag-check
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --quiet
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${TAG} already exists — nothing to release. Skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${TAG} does not exist — proceeding with release."
+          fi
+
+      - name: Configure git identity
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        if: steps.tag-check.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        if: steps.tag-check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes
