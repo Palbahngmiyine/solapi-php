@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    name: Unit / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["7.1", "7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+        phpunit-constraint: ["^9.5"]
+        include:
+          - php: "7.1"
+            phpunit-constraint: "^7.5"
+          - php: "7.2"
+            phpunit-constraint: "^7.5"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ matrix.php }}-${{ matrix.phpunit-constraint }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.php }}-${{ matrix.phpunit-constraint }}-
+            composer-${{ matrix.php }}-
+
+      - name: Pin PHPUnit constraint for matrix
+        run: composer require --dev --no-update --no-interaction "phpunit/phpunit:${{ matrix.phpunit-constraint }}"
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run unit tests
+        run: composer test:unit

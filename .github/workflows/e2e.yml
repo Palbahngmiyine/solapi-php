@@ -1,0 +1,70 @@
+name: E2E (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      php-version:
+        description: "Run E2E tests on this PHP version"
+        required: false
+        default: "8.3"
+        type: choice
+        options:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+          - "8.2"
+          - "8.3"
+          - "8.4"
+          - "8.5"
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E / PHP ${{ inputs.php-version }}
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ inputs.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: json, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-e2e-${{ inputs.php-version }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-e2e-${{ inputs.php-version }}-
+
+      - name: Pin PHPUnit for legacy PHP
+        if: inputs.php-version == '7.1' || inputs.php-version == '7.2'
+        run: composer require --dev --no-update --no-interaction "phpunit/phpunit:^7.5"
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run E2E tests
+        env:
+          SOLAPI_API_KEY: ${{ secrets.SOLAPI_API_KEY }}
+          SOLAPI_API_SECRET: ${{ secrets.SOLAPI_API_SECRET }}
+          SOLAPI_KAKAO_PF_ID: ${{ secrets.SOLAPI_KAKAO_PF_ID }}
+          SOLAPI_SENDER_NUMBER: ${{ secrets.SOLAPI_SENDER_NUMBER }}
+          SOLAPI_RECIPIENT_NUMBER: ${{ secrets.SOLAPI_RECIPIENT_NUMBER }}
+        run: composer test:e2e
