@@ -7,27 +7,27 @@ use Nurigo\Solapi\Models\BaseMessage;
 class GetGroupMessagesResponse
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $startKey;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $nextKey;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $limit;
 
     /**
-     * @var BaseMessage[]
+     * @var BaseMessage[]|null
      */
     public $messageList;
 
     /**
-     * @param mixed $value
+     * @param \stdClass $value
      */
     public function __construct($value)
     {

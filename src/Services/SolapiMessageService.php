@@ -54,10 +54,11 @@ class SolapiMessageService
         $result = $this->fetcherInstance->request("POST", "/messages/v4/send-many/detail", $requestParameter);
         $response = new SendResponse($result);
 
-        $count = $response->groupInfo->count;
+        $count = $response->groupInfo !== null ? $response->groupInfo->count : null;
         if (
+            $count !== null &&
             count($response->failedMessageList) > 0 &&
-            ($count->total === $count->registeredFailed)
+            $count->total === $count->registeredFailed
         ) {
             throw new MessageNotReceivedException($response->failedMessageList);
         }
@@ -110,7 +111,7 @@ class SolapiMessageService
     {
         try {
             $result = $this->fetcherInstance->request("GET", "/messages/v4/list", $parameter);
-            return new GetMessagesResponse($result);
+            return $result !== null ? new GetMessagesResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }
@@ -125,7 +126,7 @@ class SolapiMessageService
     {
         try {
             $result = $this->fetcherInstance->request("GET", "/messages/v4/groups", $parameter);
-            return new GetGroupsResponse($result);
+            return $result !== null ? new GetGroupsResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }
@@ -139,7 +140,8 @@ class SolapiMessageService
     public function getGroup(string $groupId): ?GroupMessageResponse
     {
         try {
-            return $this->fetcherInstance->request("GET", "/messages/v4/groups/$groupId");
+            $result = $this->fetcherInstance->request("GET", "/messages/v4/groups/$groupId");
+            return $result !== null ? new GroupMessageResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }
@@ -154,7 +156,8 @@ class SolapiMessageService
     public function getGroupMessages(string $groupId, ?GetGroupMessagesRequest $parameter = null): ?GetGroupMessagesResponse
     {
         try {
-            return $this->fetcherInstance->request("GET", "/messages/v4/groups/$groupId/messages", $parameter);
+            $result = $this->fetcherInstance->request("GET", "/messages/v4/groups/$groupId/messages", $parameter);
+            return $result !== null ? new GetGroupMessagesResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }
@@ -168,7 +171,8 @@ class SolapiMessageService
     public function getStatistics(?GetStatisticsRequest $parameter = null): ?GetStatisticsResponse
     {
         try {
-            return $this->fetcherInstance->request("GET", "/messages/v4/statistics", $parameter);
+            $result = $this->fetcherInstance->request("GET", "/messages/v4/statistics", $parameter);
+            return $result !== null ? new GetStatisticsResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }
@@ -181,7 +185,8 @@ class SolapiMessageService
     public function getBalance(): ?GetBalanceResponse
     {
         try {
-            return $this->fetcherInstance->request("GET", "/cash/v1/balance");
+            $result = $this->fetcherInstance->request("GET", "/cash/v1/balance");
+            return $result !== null ? new GetBalanceResponse($result) : null;
         } catch (Exception $exception) {
             return null;
         }

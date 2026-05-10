@@ -7,17 +7,17 @@ use JsonSerializable;
 class ErrorResponse implements JsonSerializable
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $errorCode;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $errorMessage;
 
     /**
-     * @param $value mixed
+     * @param \stdClass $value
      */
     public function __construct($value)
     {

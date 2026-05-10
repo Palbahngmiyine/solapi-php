@@ -6,57 +6,75 @@ class GroupCountForCharge
 {
 
     /**
-     * @var object
+     * @var object|null
      */
     public $sms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $lms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $mms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $ata;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $cta;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $cti;
 
     /**
-     * @var object;
+     * @var object|null
      */
     public $nsa;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $rcs_sms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $rcs_lms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $rcs_mms;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $rcs_tpl;
+
+    /**
+     * @param \stdClass $value
+     */
+    public function __construct($value)
+    {
+        $this->sms = $value->sms ?? null;
+        $this->lms = $value->lms ?? null;
+        $this->mms = $value->mms ?? null;
+        $this->ata = $value->ata ?? null;
+        $this->cta = $value->cta ?? null;
+        $this->cti = $value->cti ?? null;
+        $this->nsa = $value->nsa ?? null;
+        $this->rcs_sms = $value->rcs_sms ?? null;
+        $this->rcs_lms = $value->rcs_lms ?? null;
+        $this->rcs_mms = $value->rcs_mms ?? null;
+        $this->rcs_tpl = $value->rcs_tpl ?? null;
+    }
 }
