@@ -66,7 +66,10 @@ jobs:
 
       - name: Allow legacy PHPUnit on PHP 7.1/7.2
         if: inputs.php-version == '7.1' || inputs.php-version == '7.2'
-        run: composer config --no-plugins audit.block-insecure false
+        # PHP 7.1 ships an older Composer (<=2.2) that lacks the audit.block-insecure setting,
+        # so the command exits non-zero. That same older Composer also does not enforce the
+        # block, so ignoring the failure is safe.
+        run: composer config --no-plugins audit.block-insecure false || true
 
       - name: Pin PHPUnit constraint
         run: composer require --dev --no-update --no-interaction "phpunit/phpunit:${{ steps.phpunit.outputs.constraint }}"
