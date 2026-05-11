@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "php",
+      "package-name": "solapi/sdk",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "tag-separator": "",
+      "draft": false,
+      "prerelease": false,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/Models/Request/DefaultAgent.php"
+        }
+      ]
+    }
+  }
+}
