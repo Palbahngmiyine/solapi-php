@@ -3,26 +3,27 @@
 namespace Nurigo\Solapi\Models\Response;
 
 use JsonSerializable;
+use Nurigo\Solapi\Libraries\ResponseMapper;
 
 class SendResponse implements JsonSerializable
 {
     /**
-     * @var GroupMessageResponse
+     * @var GroupMessageResponse|null
      */
     public $groupInfo;
 
     /**
-     * @var FailedMessage[]
+     * @var FailedMessage[]|null
      */
     public $failedMessageList;
 
     /**
-     * @param $value mixed
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
-        $this->groupInfo = $value->groupInfo;
-        $this->failedMessageList = $value->failedMessageList;
+        $this->groupInfo = ResponseMapper::mapObject($value->groupInfo ?? null, GroupMessageResponse::class);
+        $this->failedMessageList = ResponseMapper::mapList($value->failedMessageList ?? null, FailedMessage::class) ?? [];
     }
 
     /**

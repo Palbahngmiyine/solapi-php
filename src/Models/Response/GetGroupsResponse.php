@@ -2,36 +2,38 @@
 
 namespace Nurigo\Solapi\Models\Response;
 
+use Nurigo\Solapi\Libraries\ResponseMapper;
+
 class GetGroupsResponse
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $startKey;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $nextKey;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $limit;
 
     /**
-     * @var GroupMessageResponse[]
+     * @var GroupMessageResponse[]|null
      */
     public $groupList;
 
     /**
-     * @param mixed $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->limit = $value->limit ?? null;
-        $this->groupList = $value->groupList ?? null;
         $this->startKey = $value->startKey ?? null;
         $this->nextKey = $value->nextKey ?? null;
+        $this->groupList = ResponseMapper::mapList($value->groupList ?? null, GroupMessageResponse::class);
     }
 }

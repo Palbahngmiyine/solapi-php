@@ -7,22 +7,22 @@ use JsonSerializable;
 class ErrorResponse implements JsonSerializable
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $errorCode;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $errorMessage;
 
     /**
-     * @param $value mixed
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
-        $this->errorCode = $value->errorCode;
-        $this->errorMessage = $value->errorMessage;
+        $this->errorCode = $value->errorCode ?? null;
+        $this->errorMessage = $value->errorMessage ?? null;
     }
 
     public function jsonSerialize(): array

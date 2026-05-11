@@ -2,55 +2,74 @@
 
 namespace Nurigo\Solapi\Models\Response;
 
+use Nurigo\Solapi\Libraries\ResponseMapper;
+
 class StatisticsMonthPeriod
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $date;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $balance;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $balanceAvg;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $point;
 
     /**
-     * @var int
+     * @var int|null
      */
     public $pointAvg;
 
     /**
-     * @var StatisticsDayPeriod[]
+     * @var StatisticsDayPeriod[]|null
      */
     public $dayPeriod;
 
     /**
-     * @var object[]
+     * @var object[]|null
      */
     public $refund;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $total;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $successed;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $failed;
+
+    /**
+     * @param \stdClass|null $value
+     */
+    public function __construct($value = null)
+    {
+        $this->date = $value->date ?? null;
+        $this->balance = $value->balance ?? null;
+        $this->balanceAvg = $value->balanceAvg ?? null;
+        $this->point = $value->point ?? null;
+        $this->pointAvg = $value->pointAvg ?? null;
+        $this->refund = $value->refund ?? null;
+        $this->total = $value->total ?? null;
+        $this->successed = $value->successed ?? null;
+        $this->failed = $value->failed ?? null;
+        $this->dayPeriod = ResponseMapper::mapList($value->dayPeriod ?? null, StatisticsDayPeriod::class);
+    }
 }

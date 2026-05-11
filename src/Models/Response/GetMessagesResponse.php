@@ -2,39 +2,38 @@
 
 namespace Nurigo\Solapi\Models\Response;
 
-use Nurigo\Solapi\Models\BaseMessage;
-use Nurigo\Solapi\Models\Message;
+use Nurigo\Solapi\Libraries\ResponseMapper;
 
 class GetMessagesResponse
 {
     /**
-     * @var int
+     * @var int|null
      */
     public $limit;
 
     /**
-     * @var BaseMessage[]
+     * @var object[]|null
      */
     public $messageList;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $startKey;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $nextKey;
 
 
     /**
-     * @param mixed $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->limit = $value->limit ?? null;
-        $this->messageList = $value->messageList ?? null;
+        $this->messageList = ResponseMapper::normalizeList($value->messageList ?? null);
         $this->startKey = $value->startKey ?? null;
         $this->nextKey = $value->nextKey ?? null;
     }
