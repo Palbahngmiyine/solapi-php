@@ -50,9 +50,9 @@ class GroupCount
     public $registeredSuccess;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->total = $value->total ?? null;
         $this->sendTotal = $value->sendTotal ?? null;

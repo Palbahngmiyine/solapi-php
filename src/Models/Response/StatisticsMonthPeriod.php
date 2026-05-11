@@ -57,9 +57,9 @@ class StatisticsMonthPeriod
     public $failed;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->date = $value->date ?? null;
         $this->balance = $value->balance ?? null;

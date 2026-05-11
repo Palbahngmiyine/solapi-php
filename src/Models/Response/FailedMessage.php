@@ -45,9 +45,9 @@ class FailedMessage
     public $accountId;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->to = $value->to ?? null;
         $this->from = $value->from ?? null;

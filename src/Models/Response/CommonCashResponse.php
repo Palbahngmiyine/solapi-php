@@ -25,9 +25,9 @@ class CommonCashResponse
     public $sum;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->requested = $value->requested ?? null;
         $this->replacement = $value->replacement ?? null;

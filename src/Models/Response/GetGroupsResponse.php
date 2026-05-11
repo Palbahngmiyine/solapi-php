@@ -27,9 +27,9 @@ class GetGroupsResponse
     public $groupList;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->limit = $value->limit ?? null;
         $this->startKey = $value->startKey ?? null;

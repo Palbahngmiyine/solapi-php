@@ -18,9 +18,9 @@ class SendResponse implements JsonSerializable
     public $failedMessageList;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->groupInfo = ResponseMapper::mapObject($value->groupInfo ?? null, GroupMessageResponse::class);
         $this->failedMessageList = ResponseMapper::mapList($value->failedMessageList ?? null, FailedMessage::class) ?? [];

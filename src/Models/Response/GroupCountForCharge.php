@@ -61,9 +61,9 @@ class GroupCountForCharge
     public $rcs_tpl;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->sms = $value->sms ?? null;
         $this->lms = $value->lms ?? null;

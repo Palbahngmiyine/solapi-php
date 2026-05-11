@@ -2,7 +2,7 @@
 
 namespace Nurigo\Solapi\Models\Response;
 
-use Nurigo\Solapi\Models\BaseMessage;
+use Nurigo\Solapi\Libraries\ResponseMapper;
 
 class GetGroupMessagesResponse
 {
@@ -22,17 +22,17 @@ class GetGroupMessagesResponse
     public $limit;
 
     /**
-     * @var BaseMessage[]|null
+     * @var object[]|null
      */
     public $messageList;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->limit = $value->limit ?? null;
-        $this->messageList = $value->messageList ?? null;
+        $this->messageList = ResponseMapper::normalizeList($value->messageList ?? null);
         $this->startKey = $value->startKey ?? null;
         $this->nextKey = $value->nextKey ?? null;
     }

@@ -15,9 +15,9 @@ class GetBalanceResponse
     public $balance;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->balance = $value->balance ?? null;
         $this->point = $value->point ?? null;

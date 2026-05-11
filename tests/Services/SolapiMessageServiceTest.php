@@ -206,6 +206,26 @@ class SolapiMessageServiceTest extends TestCase
         $this->assertContainsOnlyInstancesOf(GroupMessageResponse::class, $response->groupList);
     }
 
+    public function testGetMessagesNormalizesObjectShapedMessageListAndPreservesResponseFields(): void
+    {
+        $body = json_encode([
+            'limit' => 20,
+            'messageList' => [
+                'M4V01' => ['messageId' => 'M4V01', 'statusCode' => '2000'],
+                'M4V02' => ['messageId' => 'M4V02', 'statusCode' => '4000'],
+            ],
+        ]);
+        $this->http->respondTo('GET', '/messages/v4/list', 200, $body);
+
+        $response = $this->service->getMessages();
+
+        $this->assertInstanceOf(GetMessagesResponse::class, $response);
+        $this->assertIsArray($response->messageList);
+        $this->assertCount(2, $response->messageList);
+        $this->assertSame('M4V01', $response->messageList[0]->messageId);
+        $this->assertSame('4000', $response->messageList[1]->statusCode);
+    }
+
     // ---------- Failure path: get* methods swallow exceptions and return null ----------
 
     /**
@@ -251,6 +271,26 @@ class SolapiMessageServiceTest extends TestCase
         $result = $this->service->getStatistics();
 
         $this->assertNull($result);
+    }
+
+    public function testGetBalanceReturnsNullForEmptyServerErrorBodyWithoutPhpWarning(): void
+    {
+        $errors = [];
+        set_error_handler(static function ($severity, $message) use (&$errors) {
+            $errors[] = $message;
+            return true;
+        });
+
+        try {
+            $this->http->respondTo('GET', '/cash/v1/balance', 500, '');
+
+            $result = $this->service->getBalance();
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertNull($result);
+        $this->assertSame([], $errors);
     }
 
     public function testGetBalanceReturnsNullWhenHttpClientThrows(): void

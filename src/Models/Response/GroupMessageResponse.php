@@ -98,9 +98,9 @@ class GroupMessageResponse
     public $dateCompleted;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->count = ResponseMapper::mapObject($value->count ?? null, GroupCount::class);
         $this->countForCharge = ResponseMapper::mapObject($value->countForCharge ?? null, GroupCountForCharge::class);

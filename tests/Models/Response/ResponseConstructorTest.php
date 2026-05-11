@@ -3,9 +3,12 @@
 namespace Nurigo\Solapi\Tests\Models\Response;
 
 use Nurigo\Solapi\Models\Response\CommonCashResponse;
+use Nurigo\Solapi\Models\Response\ErrorResponse;
 use Nurigo\Solapi\Models\Response\FailedMessage;
 use Nurigo\Solapi\Models\Response\GetBalanceResponse;
+use Nurigo\Solapi\Models\Response\GetGroupMessagesResponse;
 use Nurigo\Solapi\Models\Response\GetGroupsResponse;
+use Nurigo\Solapi\Models\Response\GetMessagesResponse;
 use Nurigo\Solapi\Models\Response\GetStatisticsResponse;
 use Nurigo\Solapi\Models\Response\GroupCount;
 use Nurigo\Solapi\Models\Response\GroupCountForCharge;
@@ -14,6 +17,7 @@ use Nurigo\Solapi\Models\Response\MessageType;
 use Nurigo\Solapi\Models\Response\SendResponse;
 use Nurigo\Solapi\Models\Response\StatisticsDayPeriod;
 use Nurigo\Solapi\Models\Response\StatisticsMonthPeriod;
+use Nurigo\Solapi\Models\Response\UploadFileResponse;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -70,6 +74,61 @@ class ResponseConstructorTest extends TestCase
         $this->assertSame('01087654321', $f->from);
         $this->assertNull($f->statusCode);
         $this->assertNull($f->accountId);
+    }
+
+    public function testErrorResponseMapsMissingFieldsToNull(): void
+    {
+        $e = new ErrorResponse($this->obj([]));
+
+        $this->assertNull($e->errorCode);
+        $this->assertNull($e->errorMessage);
+    }
+
+    public function testUploadFileResponseMapsMissingFieldsToNull(): void
+    {
+        $u = new UploadFileResponse($this->obj(['fileId' => 'FILE123']));
+
+        $this->assertSame('FILE123', $u->fileId);
+        $this->assertNull($u->type);
+        $this->assertNull($u->dateUpdated);
+    }
+
+    /**
+     * @return array<string, array{0:string}>
+     */
+    public function providePublicResponseClasses(): array
+    {
+        return [
+            'CommonCashResponse' => [CommonCashResponse::class],
+            'ErrorResponse' => [ErrorResponse::class],
+            'FailedMessage' => [FailedMessage::class],
+            'GetBalanceResponse' => [GetBalanceResponse::class],
+            'GetGroupMessagesResponse' => [GetGroupMessagesResponse::class],
+            'GetGroupsResponse' => [GetGroupsResponse::class],
+            'GetMessagesResponse' => [GetMessagesResponse::class],
+            'GetStatisticsResponse' => [GetStatisticsResponse::class],
+            'GroupCount' => [GroupCount::class],
+            'GroupCountForCharge' => [GroupCountForCharge::class],
+            'GroupMessageResponse' => [GroupMessageResponse::class],
+            'MessageType' => [MessageType::class],
+            'SendResponse' => [SendResponse::class],
+            'StatisticsDayPeriod' => [StatisticsDayPeriod::class],
+            'StatisticsMonthPeriod' => [StatisticsMonthPeriod::class],
+            'UploadFileResponse' => [UploadFileResponse::class],
+        ];
+    }
+
+    /**
+     * @dataProvider providePublicResponseClasses
+     */
+    public function testPublicResponseClassesRemainDefaultConstructible(string $class): void
+    {
+        $response = new $class();
+
+        $this->assertInstanceOf($class, $response);
+        if ($response instanceof SendResponse) {
+            $this->assertSame([], $response->failedMessageList);
+        }
     }
 
     public function testGroupCountForChargeMapsObjectFieldsAndKeepsStdClass(): void
@@ -221,6 +280,8 @@ class ResponseConstructorTest extends TestCase
         $this->assertIsArray($r->groupList);
         $this->assertCount(2, $r->groupList);
         $this->assertContainsOnlyInstancesOf(GroupMessageResponse::class, $r->groupList);
+        $this->assertSame('G4V01', $r->groupList[0]->groupId);
+        $this->assertSame('G4V02', $r->groupList[1]->groupId);
     }
 
     public function testGetGroupsResponseHandlesArrayShapedGroupList(): void
@@ -243,6 +304,40 @@ class ResponseConstructorTest extends TestCase
     {
         $r = new GetGroupsResponse($this->obj([]));
         $this->assertNull($r->groupList);
+    }
+
+    // ---------- Message list responses: normalize object-keyed lists without losing fields ----------
+
+    public function testGetMessagesResponseNormalizesObjectKeyedMessageList(): void
+    {
+        $r = new GetMessagesResponse($this->obj([
+            'messageList' => [
+                'M4V01' => ['messageId' => 'M4V01', 'statusCode' => '2000'],
+                'M4V02' => ['messageId' => 'M4V02', 'statusCode' => '4000'],
+            ],
+        ]));
+
+        $this->assertIsArray($r->messageList);
+        $this->assertCount(2, $r->messageList);
+        $this->assertSame('M4V01', $r->messageList[0]->messageId);
+        $this->assertSame('2000', $r->messageList[0]->statusCode);
+        $this->assertSame('M4V02', $r->messageList[1]->messageId);
+    }
+
+    public function testGetGroupMessagesResponseNormalizesArrayShapedMessageList(): void
+    {
+        $value = new stdClass();
+        $value->messageList = [
+            $this->obj(['messageId' => 'M4V01', 'statusCode' => '2000']),
+            $this->obj(['messageId' => 'M4V02', 'statusCode' => '4000']),
+        ];
+
+        $r = new GetGroupMessagesResponse($value);
+
+        $this->assertIsArray($r->messageList);
+        $this->assertCount(2, $r->messageList);
+        $this->assertSame('M4V01', $r->messageList[0]->messageId);
+        $this->assertSame('4000', $r->messageList[1]->statusCode);
     }
 
     // ---------- SendResponse: groupInfo + failedMessageList conversion ----------

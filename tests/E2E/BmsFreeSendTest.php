@@ -38,11 +38,20 @@ use PHPUnit\Framework\TestCase;
 
 class BmsFreeSendTest extends TestCase
 {
-    private ?SolapiMessageService $messageService = null;
-    private string $pfId = '';
-    private string $senderNumber = '';
-    private string $recipientNumber = '';
-    private ?string $testImagePath = null;
+    /** @var SolapiMessageService|null */
+    private $messageService = null;
+
+    /** @var string */
+    private $pfId = '';
+
+    /** @var string */
+    private $senderNumber = '';
+
+    /** @var string */
+    private $recipientNumber = '';
+
+    /** @var string|null */
+    private $testImagePath = null;
 
     protected function setUp(): void
     {

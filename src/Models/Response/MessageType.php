@@ -65,9 +65,9 @@ class MessageType
     public $rcs_tpl;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
         $this->total = $value->total ?? null;
         $this->sms = $value->sms ?? null;

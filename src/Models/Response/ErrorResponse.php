@@ -17,12 +17,12 @@ class ErrorResponse implements JsonSerializable
     public $errorMessage;
 
     /**
-     * @param \stdClass $value
+     * @param \stdClass|null $value
      */
-    public function __construct($value)
+    public function __construct($value = null)
     {
-        $this->errorCode = $value->errorCode;
-        $this->errorMessage = $value->errorMessage;
+        $this->errorCode = $value->errorCode ?? null;
+        $this->errorMessage = $value->errorMessage ?? null;
     }
 
     public function jsonSerialize(): array
